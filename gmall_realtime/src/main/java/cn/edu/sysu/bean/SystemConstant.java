@@ -18,9 +18,17 @@ public interface SystemConstant {
     String DWM_ORDER_WIDE = "dwm_order_wide";
     String DWM_USER_JUMP_DETAIL = "dwm_user_jump_detail";
 
+    String DWD_ORDER_INFO =    "dwd_order_info";
+    String DWD_ORDER_DETAIL =    "dwd_order_detail";
+
+
+
     String TOPIC_DWD_PAYMENT_INFO = "dwd_payment_info";
     String TOPIC_DWM_ORDER_WIDE = "dwm_order_wide";
     String DWM_PAYMENT_WIDE = "dwm_payment_wide";
+
+
+
     String APPRAISE_GOOD = "appraise_good";
     String KEYWORD_SEARCH = "keyword_search";
 

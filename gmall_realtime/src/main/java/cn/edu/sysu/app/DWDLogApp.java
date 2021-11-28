@@ -22,6 +22,7 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -49,7 +50,7 @@ public class DWDLogApp extends BaseApp {
     final String DISPLAY_STREAM = "displays";
 
 
-    public static void main(String[] args) throws ClassNotFoundException {
+    public static void main(String[] args) throws ClassNotFoundException, IOException {
 
         new DWDLogApp().init(1, "DWDLogApp", SystemConstant.TOPIC_ODS_LOG);
 

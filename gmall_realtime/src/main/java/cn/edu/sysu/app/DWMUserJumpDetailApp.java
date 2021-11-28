@@ -11,6 +11,7 @@ import org.apache.flink.cep.PatternFlatTimeoutFunction;
 import org.apache.flink.cep.PatternStream;
 import org.apache.flink.cep.pattern.Pattern;
 import org.apache.flink.cep.pattern.conditions.SimpleCondition;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
@@ -20,6 +21,8 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +34,7 @@ import java.util.Map;
  */
 public class DWMUserJumpDetailApp extends BaseApp {
 
-    public static void main(String[] args) throws ClassNotFoundException {
+    public static void main(String[] args) throws ClassNotFoundException, IOException {
 
         new DWMUserJumpDetailApp().init(1, "DWMUserJumpApp", "dwd_page_log");
 
@@ -52,6 +55,10 @@ public class DWMUserJumpDetailApp extends BaseApp {
                     "\"detail\"},\"ts\":50000} "
             );*/
 
+        setWebUi(env, 20001);
+
+        sourceStream.print();
+
         // 1. 数据封装, 添加水印, 按照mid分组
         final KeyedStream<JSONObject, String> jsonObjectKS = sourceStream
                 .map(JSONObject::parseObject)
@@ -65,6 +72,7 @@ public class DWMUserJumpDetailApp extends BaseApp {
 
         // 2. 定义模式
         final Pattern<JSONObject, JSONObject> pattern = Pattern
+                // 入口
                 .<JSONObject>begin("go_in")
                 .where(new SimpleCondition<JSONObject>() {
                     // 条件1: 进入第一个页面 (没有上一个页面)
@@ -74,6 +82,7 @@ public class DWMUserJumpDetailApp extends BaseApp {
                         return lastPageId == null || lastPageId.length() == 0;
                     }
                 })
+                // 接下来30s的行为
                 .next("next")
                 .where(new SimpleCondition<JSONObject>() {
                     // 条件2: 一个或多个访问记录
@@ -118,6 +127,19 @@ public class DWMUserJumpDetailApp extends BaseApp {
         jumpStream.print("jump:");
         jumpStream.addSink(MyKafkaUtil.getKafkaSink(SystemConstant.DWM_USER_JUMP_DETAIL));
 
+    }
+
+
+    /** 修改webui的端口. 在idea调试的时候, 方便观察执行情况 */
+    public void setWebUi(StreamExecutionEnvironment env, int port) {
+        try {
+            final Field field = StreamExecutionEnvironment.class.getDeclaredField("configuration");
+            field.setAccessible(true);
+            final Configuration config = (Configuration) field.get(env);
+            config.setInteger("rest.port", port);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

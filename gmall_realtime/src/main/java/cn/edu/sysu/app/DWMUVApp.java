@@ -18,6 +18,8 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -26,19 +28,36 @@ import java.util.Comparator;
 import java.util.Date;
 /**
  * @Author : song bei chang
- * @create 2021/7/31 7:29
+ * @create 2021/11/28 12:29
  *      UV  日活
  *      firstVisitTsState  状态值为null 或者 今天时间与状态的时间不一致
+ *
+ *      1.使用event-time语义(考虑数据的乱序)
+ *      2.按照mid分组
+ *      3.添加窗口
+ *      4.过滤出当天的首次访问记录(去重)
+ *          使用flink的状态, 而且状态只保留一天即可
+ *          什么时候清除状态?  现在的日期和状态中保存的日期不一致的时候清除!
+ *      5.把当天的首次访问记录写入到dwm层(Kafka)
  */
 public class DWMUVApp extends BaseApp {
 
-    public static void main(String[] args) throws ClassNotFoundException {
+    public static void main(String[] args) throws ClassNotFoundException, IOException {
+
         new DWMUVApp().init(2, "DWMUVApp", "dwd_page_log");
+
     }
+
+
 
     @Override
     protected void run(StreamExecutionEnvironment env,
                        DataStreamSource<String> sourceStream) {
+
+        setWebUi(env, 20000);
+
+        sourceStream.print();
+
         sourceStream
                 .map(JSON::parseObject)
                 .assignTimestampsAndWatermarks(
@@ -94,6 +113,20 @@ public class DWMUVApp extends BaseApp {
                 .addSink(MyKafkaUtil.getKafkaSink(SystemConstant.DWM_UV));
 
     }
+
+
+    /** 修改webui的端口. 在idea调试的时候, 方便观察执行情况 */
+    public void setWebUi(StreamExecutionEnvironment env, int port) {
+        try {
+            final Field field = StreamExecutionEnvironment.class.getDeclaredField("configuration");
+            field.setAccessible(true);
+            final Configuration config = (Configuration) field.get(env);
+            config.setInteger("rest.port", port);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
 

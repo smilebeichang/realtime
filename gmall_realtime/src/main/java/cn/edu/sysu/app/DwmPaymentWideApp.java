@@ -21,15 +21,20 @@ import java.time.Duration;
 import java.util.Map;
 
 /**
- * @Author lizhenchao@atguigu.cn
- * @Date 2021/8/3 9:15
+ * @Author song bei chang
+ * @Date 2021/11/28 17:15
  *
  * 双流join所以继承 BaseAppV2
  */
 public class DwmPaymentWideApp extends BaseAppV2 {
 
     public static void main(String[] args) {
-        new DwmPaymentWideApp().init(1, "DWMPaymentWideApp", SystemConstant.TOPIC_DWD_PAYMENT_INFO, SystemConstant.TOPIC_DWM_ORDER_WIDE);
+
+        new DwmPaymentWideApp().init(
+                1,
+                "DWMPaymentWideApp",
+                SystemConstant.TOPIC_DWD_PAYMENT_INFO,
+                SystemConstant.TOPIC_DWM_ORDER_WIDE);
     }
 
     
@@ -46,6 +51,7 @@ public class DwmPaymentWideApp extends BaseAppV2 {
                     .withTimestampAssigner((pi, ts) -> CommonUtil.toTs(pi.getCreate_time()))
             )
             .keyBy(PaymentInfo::getOrder_id);
+
         paymentInfoStream.print("paymentInfoStream");
 
         // 2.获取流  订单宽表

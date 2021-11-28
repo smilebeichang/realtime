@@ -4,6 +4,7 @@ package cn.edu.sysu.app;
 import cn.edu.sysu.bean.OrderDetail;
 import cn.edu.sysu.bean.OrderInfo;
 import cn.edu.sysu.bean.OrderWide;
+import cn.edu.sysu.bean.SystemConstant;
 import cn.edu.sysu.util.MyJDBCUtil;
 import cn.edu.sysu.util.MyRedisUtil;
 import com.alibaba.fastjson.JSON;
@@ -26,31 +27,42 @@ import java.util.Map;
 
 /**
  * @Author : song bei chang
- * @create 2021/7/31 7:39
+ * @create 2021/11/28 16:39
+ *
+ *      为了之后统计计算更加方便，减少大表之间的关联，所以在实时计算过程中将围绕订单的相关数据整合成为一张订单的宽表。
+ *      1.事实数据和事实数据关联，其实就是流与流之间的关联。
+ *      2.事实数据与维度数据关联，其实就是流计算中查询外部数据源。
+ *
  */
 public class DWMOrderWideApp extends BaseAppV2 {
 
     public static void main(String[] args) {
-        new DWMOrderWideApp().init(2,
+
+        // BaseApp 升级改造,形成不定长参数,可以消费多个流 参数需优化为常量
+        new DWMOrderWideApp().init(
+                2,
                 "DWMOrderWideApp",
-                "dwd_order_info",
-                "dwd_order_detail");
+                SystemConstant.DWD_ORDER_INFO,
+                SystemConstant.DWD_ORDER_DETAIL
+        );
+
     }
 
     @Override
     protected void run(StreamExecutionEnvironment env,
                        Map<String, DataStreamSource<String>> sourceStreams) {
 
-        setWebUi(env, 8888);
+        setWebUi(env, 20003);
+
         // 1. 订单表和订单明细表join
         final SingleOutputStreamOperator<OrderWide> orderWideStreamWithoutDim = factJoin(sourceStreams);
 
-        // orderWideStreamWithoutDim.print("join")
+        orderWideStreamWithoutDim.print("join");
 
         // 2. join维度信息
         final SingleOutputStreamOperator<OrderWide> orderWideStreamWithDim = readDim(orderWideStreamWithoutDim);
 
-        // orderWideStreamWithDim.print("dim")
+        orderWideStreamWithDim.print("dim");
 
     }
 
@@ -101,6 +113,7 @@ public class DWMOrderWideApp extends BaseAppV2 {
                             //1.2  缓存中没有数据, 需要从HBase读取数据
                             final List<JSONObject> dim = MyJDBCUtil
                                     .queryList(conn, sql, new Object[]{id}, JSONObject.class, false);
+                            // java.lang.IndexOutOfBoundsException: Index: 0, Size: 0 待优化,看来维度表数据不全啊
                             obj = dim.get(0);
                             // 1.3 数据写入缓存, 设置缓存失效时间7天 key,ddl,value
                             client.setex(key, 3600 * 24 * 7, JSON.toJSONString(obj));
@@ -110,17 +123,17 @@ public class DWMOrderWideApp extends BaseAppV2 {
 
                     @Override
                     public OrderWide map(OrderWide orderWide) throws Exception {
-                        // 1. join user_info
+                        // 1. join join user_info 用户信息
                         final JSONObject userInfoObj = readDim("dim_user_info", orderWide.getUser_id().toString());
                         orderWide.setUser_gender(userInfoObj.getString("GENDER"));
                         orderWide.calcUserAgeByBirthday(userInfoObj.getString("BIRTHDAY"));
 
                         // 2. join 省份维度
-                        final JSONObject provinceObj = readDim("dim_base_province", orderWide.getProvince_id().toString());
-                        orderWide.setProvince_3166_2_code(provinceObj.getString("ISO_3166_2"));
-                        orderWide.setProvince_area_code(provinceObj.getString("AREA_CODE"));
-                        orderWide.setProvince_name(provinceObj.getString("NAME"));
-                        orderWide.setProvince_iso_code(provinceObj.getString("ISO_CODE"));
+//                        final JSONObject provinceObj = readDim("dim_base_province", orderWide.getProvince_id().toString());
+//                        orderWide.setProvince_3166_2_code(provinceObj.getString("ISO_3166_2"));
+//                        orderWide.setProvince_area_code(provinceObj.getString("AREA_CODE"));
+//                        orderWide.setProvince_name(provinceObj.getString("NAME"));
+//                        orderWide.setProvince_iso_code(provinceObj.getString("ISO_CODE"));
 
                         // 3. join sku维度
                         final JSONObject skuObj = readDim("dim_sku_info", orderWide.getSku_id() + "");
@@ -157,6 +170,7 @@ public class DWMOrderWideApp extends BaseAppV2 {
                         }
                     }
                 });
+
         return result;
 
     }
@@ -188,7 +202,7 @@ public class DWMOrderWideApp extends BaseAppV2 {
                                 .withTimestampAssigner((orderDetail, ts) -> orderDetail.getCreate_ts())
                 );
 
-        // 2. 订单和订单明细表使用 intervalJoin 进行join
+        // 2. 订单和订单明细表使用 intervalJoin 进行join  间隔流(Interval Join), 是指使用一个流的数据按照key去join另外一条流的指定范围的数据.
         return orderInfoStream.keyBy(OrderInfo::getId)
                 .intervalJoin(orderDetailStream.keyBy(OrderDetail::getOrder_id))
                 .between(Time.seconds(-5), Time.seconds(5))
@@ -199,6 +213,7 @@ public class DWMOrderWideApp extends BaseAppV2 {
                     }
                 });
     }
+
 }
 
 

@@ -1,9 +1,6 @@
 package cn.edu.sysu.util;
 
-/**
- * @Author : song bei chang
- * @create 2021/7/31 15:51
- */
+
 import com.google.common.base.CaseFormat;
 import org.apache.commons.beanutils.BeanUtils;
 
@@ -14,7 +11,7 @@ import java.util.List;
 /**
  * jdbc工具类
  *
- * @Author lizhenchao@atguigu.cn
+ * @Author lizhenchao
  * @Date 2021/2/4 21:07
  */
 public class MyJDBCUtil {

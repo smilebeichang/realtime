@@ -15,12 +15,13 @@ import static java.lang.Integer.parseInt;
 
 /**
  * @Author : song bei chang
- * @create 2021/7/31 7:36
+ * @create 2021/11/28 16:29
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderWide {
+
     private Long detail_id;
     private Long order_id;
     private Long sku_id;
@@ -35,6 +36,8 @@ public class OrderWide {
     private BigDecimal activity_reduce_amount;
     private BigDecimal coupon_reduce_amount;
     private BigDecimal original_total_amount;
+
+    /** freight  待后续修正*/
     private BigDecimal feight_fee;
     private BigDecimal split_feight_fee;
     private BigDecimal split_activity_amount;
@@ -44,10 +47,13 @@ public class OrderWide {
     private String expire_time;
     private String create_time;
     private String operate_time;
-    private String create_date; // 把其他字段处理得到
+
+    /** 把其他字段处理得到 */
+    private String create_date;
     private String create_hour;
 
-    private String province_name;//查询维表得到
+    /** 查询维表得到 */
+    private String province_name;
     private String province_area_code;
     private String province_iso_code;
     private String province_3166_2_code;
@@ -55,7 +61,7 @@ public class OrderWide {
     private Integer user_age;
     private String user_gender;
 
-    //作为维度数据 要关联进来
+    /** 作为维度数据 要关联进来 */
     private Long spu_id;
     private Long tm_id;
     private Long category3_id;
@@ -122,7 +128,7 @@ public class OrderWide {
         this.split_total_amount = ObjectUtils.firstNonNull(this.split_total_amount);
     }
 
-    // 根据生日计算年龄
+    /** 根据生日计算年龄 */
     public void calcUserAgeByBirthday(String birthday) {
         try {
             final long birthdayTime = new SimpleDateFormat("yyyy-MM-dd").parse(birthday).getTime();

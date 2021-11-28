@@ -10,12 +10,13 @@ import java.text.SimpleDateFormat;
 
 /**
  * @Author : song bei chang
- * @create 2021/7/31 7:34
+ * @create 2021/11/28 16:29
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderInfo {
+
     private Long id;
     private Long province_id;
     private String order_status;
@@ -28,12 +29,13 @@ public class OrderInfo {
     private String expire_time;
     private String create_time;
     private String operate_time;
-    // 把其他字段处理得到
+
+    /** 把其他字段处理得到 */
     private String create_date;
     private String create_hour;
     private Long create_ts;
 
-    // 为了create_ts时间戳赋值, 所以需要手动补充
+    /** 为了create_ts 时间戳赋值, 所以需要手动补充 */
     public void setCreate_time(String create_time) throws ParseException {
         this.create_time = create_time;
 
@@ -43,6 +45,7 @@ public class OrderInfo {
         this.create_hour = this.create_time.substring(11, 13);
 
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
         this.create_ts = sdf.parse(create_time).getTime();
 
     }

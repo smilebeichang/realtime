@@ -18,6 +18,8 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  *              106.12.138.166 bcc2
  *              182.61.59.65 bcc3
  *              106.12.138.245 bcc4
+ *
+ * 返回 DataStreamSource
  */
 public abstract class BaseApp {
 
@@ -47,7 +49,8 @@ public abstract class BaseApp {
         env.setParallelism(defaultParallelism);
         // 设置CK相关的参数
         // 1. 设置精准一次性保证（默认）  每5000ms开始一次checkpoint
-        env.enableCheckpointing(5000, CheckpointingMode.EXACTLY_ONCE);
+        //env.enableCheckpointing(5000, CheckpointingMode.EXACTLY_ONCE);
+
         // 2. Checkpoint必须在一分钟内完成，否则就会被抛弃
         env.getCheckpointConfig().setCheckpointTimeout(60000);
         // 3.开启在 job 中止后仍然保留的 externalized checkpoints

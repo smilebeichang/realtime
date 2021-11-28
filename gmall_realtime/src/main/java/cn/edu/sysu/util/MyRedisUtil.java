@@ -30,7 +30,7 @@ public class MyRedisUtil {
             //取连接的时候进行一下测试 ping pong
             jedisPoolConfig.setTestOnBorrow(true);
 
-            jedisPool = new JedisPool(jedisPoolConfig, "ecs2", 6379, 5000);
+            jedisPool = new JedisPool(jedisPoolConfig, "ecs2", 6379, 50000);
             System.out.println("开辟连接池");
 
         } else {

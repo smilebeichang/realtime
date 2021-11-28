@@ -33,7 +33,9 @@ public class MySinkUtil {
         final Field[] fields = tClass.getDeclaredFields();
         final StringBuilder sql = new StringBuilder();
         sql.append("insert into ").append(tableName).append(" (");
+
         for (Field field : fields) {
+
             // 可能有些属性不需要写出去, 这样的字段我们用transient标识  如果这个字段有NoSink这个注解,则不要拼接
             if (!Modifier.isTransient(field.getModifiers())) {
 
@@ -44,12 +46,12 @@ public class MySinkUtil {
                     sql.append(fieldName).append(",");
                 }
 
-
             }
         }
         // 拼接的最后一个逗号去掉
         sql.deleteCharAt(sql.length() - 1);
         sql.append(")values(");
+
         for (Field field : fields) {
             if (!Modifier.isTransient(field.getModifiers())) {
 

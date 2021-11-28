@@ -28,8 +28,8 @@ public class MyKafkaUtil {
         props.setProperty("bootstrap.servers", "ecs2:9092,ecs3:9092,ecs4:9092");
         props.setProperty("group.id", groupId);
         // 如果启动的时候, 这个消费者对这个topic的消费没有上次的消费记录, 就从这个配置的位置开始消费
-        // 如果有消费记录, 则从上次的位置开始消费
-        props.setProperty("auto.offset.reset", "latest");
+        // 如果有消费记录, 则从上次的位置开始消费 earliest  latest  none
+        props.setProperty("auto.offset.reset", "earliest");
         // 设置隔离级别
         props.setProperty("isolation.level", "read_committed");
         return new FlinkKafkaConsumer<>(topic, new SimpleStringSchema(), props);
@@ -37,6 +37,7 @@ public class MyKafkaUtil {
 
 
     /**
+     * 普通版(适用于log)
      * kafka sink
      *
      */
@@ -57,7 +58,9 @@ public class MyKafkaUtil {
                 },
                 properties,
                 // 开启Flink Kafka的二阶段提交
-                FlinkKafkaProducer.Semantic.EXACTLY_ONCE
+                //FlinkKafkaProducer.Semantic.EXACTLY_ONCE
+                // Using EXACTLY_ONCE semantic, but checkpointing is not enabled. Switching to NONE semantic.
+                FlinkKafkaProducer.Semantic.NONE
         );
 
     }
@@ -65,7 +68,8 @@ public class MyKafkaUtil {
 
 
     /**
-     *  升级版
+     *  升级版(适用于db)
+     *  kafka sink
      *  根据内容动态的写入不同的kafka Topic (本质是提取SinkTable)
      */
     public static FlinkKafkaProducer<Tuple2<JSONObject, TableProcess>> getKafkaSink() {

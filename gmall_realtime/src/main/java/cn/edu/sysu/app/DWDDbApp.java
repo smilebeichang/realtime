@@ -22,6 +22,7 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 import redis.clients.jedis.Jedis;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -43,7 +44,7 @@ public class DWDDbApp extends BaseApp {
     final static OutputTag<Tuple2<JSONObject, TableProcess>> hbaseTag = new OutputTag<Tuple2<JSONObject, TableProcess>>("hbaseTag") {};
 
 
-    public static void main(String[] args) throws ClassNotFoundException {
+    public static void main(String[] args) throws ClassNotFoundException, IOException {
 
         new DWDDbApp().init(1, "DWDDbApp", SystemConstant.TOPIC_ODS_DB);
 

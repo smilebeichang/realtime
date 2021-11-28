@@ -1,5 +1,6 @@
 package cn.edu.sysu.app;
 
+import cn.edu.sysu.bean.SystemConstant;
 import cn.edu.sysu.bean.VisitorStats;
 import cn.edu.sysu.util.MySinkUtil;
 import com.alibaba.fastjson.JSON;
@@ -25,13 +26,18 @@ import java.util.Map;
 
 /**
  * @Author : song bei chang
- * @create 2021/8/4 14:32
+ * @create 2021/11/28 18:33
  */
 public class DWSVisitorStatsApp extends BaseAppV2 {
+
     public static void main(String[] args) {
+
         new DWSVisitorStatsApp().init(1,
                 "DWSVisitorStatsApp",
-                "dwd_page_log", "dwm_uv", "dwm_user_jump_detail");
+                SystemConstant.DWD_PAGE_LOG,
+                SystemConstant.DWM_UV,
+                SystemConstant.DWM_USER_JUMP_DETAIL
+        );
 
     }
 
@@ -45,13 +51,13 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
 
         // 2. 开窗聚合
         SingleOutputStreamOperator<VisitorStats> resultStream = aggregateByDims(visitorStatsDataStream);
-        resultStream.print("resultStream");
+        //resultStream.print("resultStream")
 
         // 侧输出流验证
         resultStream.getSideOutput(new OutputTag<VisitorStats>("late"){}).print();
 
         // 3. 写入ClickHouse
-        sink2ClickHouse(resultStream);
+        //sink2ClickHouse(resultStream);
 
 
     }
@@ -65,11 +71,11 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
     private DataStream<VisitorStats> parseStreamsAndUnionOne(Map<String, DataStreamSource<String>> sourceStreams) {
 
         // 1. 获取到3个流
-        final DataStreamSource<String> pageLogStream = sourceStreams.get("dwd_page_log");
-        final DataStreamSource<String> uvStream = sourceStreams.get("dwm_uv");
-        final DataStreamSource<String> userJumpStream = sourceStreams.get("dwm_user_jump_detail");
+        final DataStreamSource<String> pageLogStream = sourceStreams.get(SystemConstant.DWD_PAGE_LOG);
+        final DataStreamSource<String> uvStream = sourceStreams.get(SystemConstant.DWM_UV);
+        final DataStreamSource<String> userJumpStream = sourceStreams.get(SystemConstant.DWM_USER_JUMP_DETAIL);
 
-        // 2. 若要把3个流合并为一个流需使用union, 所以需要把它们都转成同一类型
+        // 2. 若要把3个流合并为一个流需使用union, 其中一个会进行扩展,所以需要把它们都转成同一类型
         // uv 独立访问次数，日活
         final SingleOutputStreamOperator<VisitorStats> uvStatsStream = uvStream
                 .map(json -> {
@@ -99,7 +105,7 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
                 });
 
 
-        // sv 跳入次数
+        // sv 跳入次数  flatMap
         final SingleOutputStreamOperator<VisitorStats> svPageStream = pageLogStream
                 .flatMap(new FlatMapFunction<String, VisitorStats>() {
                     @Override
@@ -136,6 +142,7 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
         });
 
         return uvStatsStream.union(pageStatsStream, svPageStream, userJumpStatsStream);
+
     }
 
 
@@ -148,10 +155,11 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
      *      解决：1.乱序时间需大于 uv的时间
      *           2.每一个参与union的流均加一个窗口，默认选最小的窗口
      *
-     *
      */
     private SingleOutputStreamOperator<VisitorStats> aggregateByDims(DataStream<VisitorStats> visitorStatsDataStream) {
+
         final SingleOutputStreamOperator<VisitorStats> result = visitorStatsDataStream
+
                 // 1. 添加水印和时间戳
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy
@@ -159,12 +167,14 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
                                 .<VisitorStats>forBoundedOutOfOrderness(Duration.ofSeconds(10))
                                 .withTimestampAssigner((vs, ts) -> vs.getTs())
                 )
+
                 // 2. 选取4个维度做为key:版本, 渠道, 地区, 新老用户标识
                 .keyBy(vs -> vs.getVc() + "_" + vs.getCh() + "_" + vs.getAr() + "_" + vs.getIs_new())
                 // 使用滚动窗口,避免重叠
                 .window(TumblingEventTimeWindows.of(Time.seconds(10)))
                 // 加入侧输出流验证是否有过期数据
                 .sideOutputLateData(new OutputTag<VisitorStats>("late"){})
+
                 // 3. 聚合
                 .reduce(
                         new ReduceFunction<VisitorStats>() {
@@ -196,6 +206,7 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
                                 out.collect(stats);
                             }
                         });
+
         return result;
     }
 

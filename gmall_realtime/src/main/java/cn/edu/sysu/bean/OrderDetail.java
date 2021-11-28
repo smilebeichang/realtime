@@ -11,12 +11,13 @@ import java.text.SimpleDateFormat;
 
 /**
  * @Author : song bei chang
- * @create 2021/7/31 7:35
+ * @create 2021/11/28 16:29
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderDetail {
+
     private Long id;
     private Long order_id;
     private Long sku_id;
@@ -28,7 +29,8 @@ public class OrderDetail {
     private BigDecimal split_activity_amount;
     private BigDecimal split_coupon_amount;
     private Long create_ts;
-    // 为了create_ts时间戳赋值, 所以需要手动补充
+
+    /** 为了create_ts 时间戳赋值, 所以需要手动补充 */
     public void setCreate_time(String create_time) throws ParseException {
         this.create_time = create_time;
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

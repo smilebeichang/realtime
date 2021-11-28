@@ -15,7 +15,9 @@ import java.util.Map;
 
 /**
  * @Author : song bei chang
- * @create 2021/7/31 7:38
+ * @create 2021/11/28 16:39
+ *
+ *  BaseApp 升级改造,形成不定长参数,可以消费多个流,返回HashMap<String, DataStreamSource>
  */
 public abstract class BaseAppV2 {
     /**
@@ -33,14 +35,17 @@ public abstract class BaseAppV2 {
      * @param defaultParallelism 默认并行度
      * @param groupId            消费者组
      * @param topics             消费的的多个流
+     *
      */
     public void init(int defaultParallelism, String groupId, String... topics) {
+
         System.setProperty("HADOOP_USER_NAME", "atguigu");
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(defaultParallelism);
+
         // 设置CK相关的参数
         // 1. 设置精准一次性保证（默认）  每5000ms开始一次checkpoint
-        env.enableCheckpointing(5000, CheckpointingMode.EXACTLY_ONCE);
+        //env.enableCheckpointing(5000, CheckpointingMode.EXACTLY_ONCE);
         // 2. Checkpoint必须在一分钟内完成，否则就会被抛弃
         env.getCheckpointConfig().setCheckpointTimeout(60000);
         // 3.开启在 job 中止后仍然保留的 externalized checkpoints
@@ -48,14 +53,16 @@ public abstract class BaseAppV2 {
                 .getCheckpointConfig()
                 .enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
         // 4. 设置状态后端
-        env.setStateBackend(new FsStateBackend("hdfs://hadoop162:8020/gmall2021/flink/checkpoint1"));
+        env.setStateBackend(new FsStateBackend("hdfs://ecs2:9820/flink/realtime/checkpoint"));
 
         final Map<String, DataStreamSource<String>> sourceStreams = new HashMap<>();
         for (String topic : topics) {
             final DataStreamSource<String> sourceStream = env.addSource(MyKafkaUtil.getKafkaSource(groupId, topic));
             sourceStreams.put(topic, sourceStream);
         }
+
         run(env, sourceStreams);
+
         try {
             env.execute(groupId);
         } catch (Exception e) {
@@ -63,7 +70,7 @@ public abstract class BaseAppV2 {
         }
     }
 
-    // 修改webui的端口. 在idea调试的时候, 方便观察执行情况
+    /** 修改 WebUI  的端口. 在idea调试的时候, 方便观察执行情况 */
     public void setWebUi(StreamExecutionEnvironment env, int port) {
         try {
             final Field field = StreamExecutionEnvironment.class.getDeclaredField("configuration");

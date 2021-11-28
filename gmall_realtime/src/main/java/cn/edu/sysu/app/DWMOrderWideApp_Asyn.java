@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @Author : song bei chang
- * @create 2021/7/31 7:39
+ * @create 2021/11/28 17:39
  *
  *  双流 intervalJoin
  */
@@ -45,8 +45,9 @@ public class DWMOrderWideApp_Asyn extends BaseAppV2 {
 
         new DWMOrderWideApp_Asyn().init(1,
                 "DWMOrderWideApp_Asyn",
-                "dwd_order_info",
-                "dwd_order_detail");
+                SystemConstant.DWD_ORDER_INFO,
+                SystemConstant.DWD_ORDER_DETAIL
+        );
 
     }
 
@@ -54,7 +55,7 @@ public class DWMOrderWideApp_Asyn extends BaseAppV2 {
     protected void run(StreamExecutionEnvironment env,
                        Map<String, DataStreamSource<String>> sourceStreams) {
 
-        setWebUi(env, 8888);
+        setWebUi(env, 2004);
         // 1. 订单表和订单明细表join
         final SingleOutputStreamOperator<OrderWide> orderWideStreamWithoutDim = factJoin(sourceStreams);
 
@@ -92,7 +93,7 @@ public class DWMOrderWideApp_Asyn extends BaseAppV2 {
      */
     private SingleOutputStreamOperator<OrderWide> readDim(SingleOutputStreamOperator<OrderWide> orderWideStreamWithoutDim) {
 
-        String phoenixUrl = "jdbc:phoenix:hadoop162,hadoop163,hadoop164:2181";
+        String phoenixUrl = "jdbc:phoenix:ecs2,ecs3,ecs4:2181";
 
         // AsyncDataStream 流的异步处理
         final SingleOutputStreamOperator<OrderWide> OrderWideWithUserInfo = AsyncDataStream.unorderedWait(

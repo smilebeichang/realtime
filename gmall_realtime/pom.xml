@@ -152,13 +152,13 @@
             <groupId>org.apache.phoenix</groupId>
             <artifactId>phoenix-core</artifactId>
             <version>5.0.0-HBase-2.0</version>
-            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.glassfish</groupId>
                     <artifactId>javax.el</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -177,6 +177,13 @@
             <version>3.2.0</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.vaadin.external.google</groupId>
+            <artifactId>android-json</artifactId>
+            <version>0.0.20131108.vaadin1</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -203,11 +210,11 @@
         </dependency>
 
         <!-- 验证这个版本是否兼容  需下载连接器-->
-        <dependency>
-            <groupId>com.aliyun</groupId>
-            <artifactId>flink-connector-clickhouse</artifactId>
-            <version>1.12.0</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.aliyun</groupId>-->
+            <!--<artifactId>flink-connector-clickhouse</artifactId>-->
+            <!--<version>1.12.0</version>-->
+        <!--</dependency>-->
 
 
         <!-- IK 分词器 -->
@@ -215,6 +222,13 @@
             <groupId>com.janeluo</groupId>
             <artifactId>ikanalyzer</artifactId>
             <version>2012_u6</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-statebackend-rocksdb_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
         </dependency>
 
 

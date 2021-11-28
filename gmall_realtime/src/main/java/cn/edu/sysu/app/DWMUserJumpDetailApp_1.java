@@ -18,6 +18,7 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ import java.util.Map;
  */
 public class DWMUserJumpDetailApp_1 extends BaseApp {
 
-    public static void main(String[] args) throws ClassNotFoundException {
+    public static void main(String[] args) throws ClassNotFoundException, IOException {
 
         new DWMUserJumpDetailApp_1().init(1, "DWMUserJumpApp", "dwd_page_log");
 
