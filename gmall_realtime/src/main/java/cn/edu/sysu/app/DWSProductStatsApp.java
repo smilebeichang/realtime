@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @Author : song bei chang
- * @create 2021/8/6 8:48
+ * @create 2021/11/29 20:48
  */
 public class DWSProductStatsApp extends BaseAppV2 {
 
@@ -42,23 +42,26 @@ public class DWSProductStatsApp extends BaseAppV2 {
      *
      */
     public static void main(String[] args) {
+
         final String[] topics = {
-                "dwd_page_log",
-                "dwm_order_wide",
-                "dwd_favor_info",
-                "dwd_cart_info",
-                "dwm_payment_wide",
-                "dwd_order_refund_info",
-                "dwd_comment_info"
+                SystemConstant.DWD_PAGE_LOG,
+                SystemConstant.DWM_ORDER_WIDE,
+                SystemConstant.DWD_FAVOR_INFO,
+                SystemConstant.DWD_CART_INFO,
+                SystemConstant.DWM_PAYMENT_WIDE,
+                SystemConstant.DWD_ORDER_REFUND_INFO,
+                SystemConstant.DWD_COMMENT_INFO
         };
         new DWSProductStatsApp().init(1, "DWSProductStatsApp", topics);
+
     }
 
     @Override
     protected void run(StreamExecutionEnvironment env,
                        Map<String, DataStreamSource<String>> sourceStreams) {
 
-        setWebUi(env, 8889);
+        setWebUi(env, 20005);
+
         // 1. 解析多个流, 并合并为一个流
         final DataStream<ProductStats> productStatsDataStream = parseStreamsAndUnionOne(sourceStreams);
 
@@ -255,6 +258,7 @@ public class DWSProductStatsApp extends BaseAppV2 {
      * @return
      */
     private SingleOutputStreamOperator<ProductStats> aggregateByDims(DataStream<ProductStats> productStatsDataStream) {
+
         return productStatsDataStream
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy
@@ -357,7 +361,8 @@ public class DWSProductStatsApp extends BaseAppV2 {
     private void sink2Clickhouse(SingleOutputStreamOperator<ProductStats> resultStream) {
 
 
-        resultStream.addSink(MySinkUtil.getClickHouseSink("gmall2021", "product_stats_2021", ProductStats.class));
+        resultStream.addSink(MySinkUtil.getClickHouseSink("gmall_realtime", "product_stats_2021", ProductStats.class));
+
     }
 
 

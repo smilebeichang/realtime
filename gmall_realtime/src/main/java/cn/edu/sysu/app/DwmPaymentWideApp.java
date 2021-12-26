@@ -33,8 +33,8 @@ public class DwmPaymentWideApp extends BaseAppV2 {
         new DwmPaymentWideApp().init(
                 1,
                 "DWMPaymentWideApp",
-                SystemConstant.TOPIC_DWD_PAYMENT_INFO,
-                SystemConstant.TOPIC_DWM_ORDER_WIDE);
+                SystemConstant.DWD_PAYMENT_INFO,
+                SystemConstant.DWM_ORDER_WIDE);
     }
 
     
@@ -43,7 +43,7 @@ public class DwmPaymentWideApp extends BaseAppV2 {
 
         // 1.获取流 支付
         KeyedStream<PaymentInfo, Long> paymentInfoStream = streams
-            .get(SystemConstant.TOPIC_DWD_PAYMENT_INFO)
+            .get(SystemConstant.DWD_PAYMENT_INFO)
             .map(s -> JSON.parseObject(s, PaymentInfo.class))
             .assignTimestampsAndWatermarks(
                 WatermarkStrategy
@@ -56,7 +56,7 @@ public class DwmPaymentWideApp extends BaseAppV2 {
 
         // 2.获取流  订单宽表
         KeyedStream<OrderWide, Long> orderWideStream = streams
-            .get(SystemConstant.TOPIC_DWM_ORDER_WIDE)
+            .get(SystemConstant.DWM_ORDER_WIDE)
             .map(s -> JSON.parseObject(s, OrderWide.class))
             .assignTimestampsAndWatermarks(
                 WatermarkStrategy

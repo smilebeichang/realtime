@@ -52,7 +52,7 @@ public class DWDLogApp extends BaseApp {
 
     public static void main(String[] args) throws ClassNotFoundException, IOException {
 
-        new DWDLogApp().init(1, "DWDLogApp", SystemConstant.TOPIC_ODS_LOG);
+        new DWDLogApp().init(1, "DWDLogApp", SystemConstant.ODS_LOG);
 
     }
 

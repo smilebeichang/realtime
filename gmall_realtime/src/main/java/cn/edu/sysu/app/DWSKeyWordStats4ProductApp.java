@@ -16,7 +16,7 @@ import java.lang.reflect.Field;
 
 /**
  * @Author : song bei chang
- * @create 2021/8/7 10:42
+ * @create 2021/11/29 22:42
  */
 public class DWSKeyWordStats4ProductApp {
 
@@ -24,15 +24,17 @@ public class DWSKeyWordStats4ProductApp {
     public static void main(String[] args) {
 
         System.setProperty("HADOOP_USER_NAME", "atguigu");
+
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         setWebUi(env, 2100);
         env.setParallelism(1);
         env.enableCheckpointing(5000, CheckpointingMode.EXACTLY_ONCE);
         env.getCheckpointConfig().setCheckpointTimeout(60000);
+
         env
                 .getCheckpointConfig()
                 .enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
-        env.setStateBackend(new FsStateBackend("hdfs://hadoop162:8020/gmall2021/flink/checkpoint2"));
+        env.setStateBackend(new FsStateBackend("hdfs://ecs2:9820/flink/realtime/checkpoint"));
 
         final StreamTableEnvironment tenv = StreamTableEnvironment.create(env);
 
@@ -48,7 +50,7 @@ public class DWSKeyWordStats4ProductApp {
                 ") WITH(" +
                 "   'connector' = 'kafka'," +
                 "   'topic' = 'dws_product_stats'," +
-                "   'properties.bootstrap.servers' = 'hadoop162:9029,hadoop163:9092,hadoop164:9092'," +
+                "   'properties.bootstrap.servers' = 'ecs2:9092,ecs3:9092,ecs4:9092'," +
                 "   'properties.group.id' = 'DWSKeyWordStats4ProductApp'," +
                 //  latest-offset  earliest-offset
                 "   'scan.startup.mode' = 'earliest-offset'," +
@@ -80,7 +82,7 @@ public class DWSKeyWordStats4ProductApp {
                 .filter(t -> t.f0)
                 .map(t -> t.f1)
                 //.print("t1：");
-                .addSink(MySinkUtil.getClickHouseSink("gmall2021","keyword_stats_2021" , T3.class));
+                .addSink(MySinkUtil.getClickHouseSink("gmall_realtime","keyword_stats_2021" , T3.class));
 
 
         try {

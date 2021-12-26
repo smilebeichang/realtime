@@ -13,23 +13,27 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 
 /**
  * @Author : song bei chang
- * @create 2021/8/6 12:56
+ * @create 2021/11/29 21:56
+ *
+ * 没有继承BaseApp 一切均自己搞定
  */
 public class DWSProvinceStatsSqlApp {
 
 
     public static void main(String[] args) {
+
         System.setProperty("HADOOP_USER_NAME", "atguigu");
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
-        env.enableCheckpointing(5000, CheckpointingMode.EXACTLY_ONCE);
+        //env.enableCheckpointing(5000, CheckpointingMode.EXACTLY_ONCE);
         env.getCheckpointConfig().setCheckpointTimeout(60000);
         env
                 .getCheckpointConfig()
                 .enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
-        env.setStateBackend(new FsStateBackend("hdfs://hadoop162:8020/gmall2021/flink/checkpoint2"));
+        env.setStateBackend(new FsStateBackend("hdfs://ecs2:9820/flink/realtime/checkpoint"));
 
         final StreamTableEnvironment tenv = StreamTableEnvironment.create(env);
+
         // 1. 注册SourceTable: 从Kafka读数据
         tenv.executeSql("CREATE TABLE order_wide (" +
                 "   province_id BIGINT, " +
@@ -45,10 +49,10 @@ public class DWSProvinceStatsSqlApp {
                 "WITH (" +
                 "   'connector' = 'kafka'," +
                 "   'topic' = 'dwm_order_wide'," +
-                "   'properties.bootstrap.servers' = 'hadoop162:9029,hadoop163:9092,hadoop164:9092'," +
-                "   'properties.group.id' = 'DWSProvinceStatsSqlApp'," +
+                "   'properties.bootstrap.servers' = 'ecs2:9092,ecs3:9092,ecs4:9092'," +
+                "   'properties.group.id' = 'DWSProvinceStatsSqlApp3'," +
                 // latest-offset  earliest-offset
-                "   'scan.startup.mode' = 'latest-offset'," +
+                "   'scan.startup.mode' = 'earliest-offset'," +
                 "   'format' = 'json'" +
                 ")");
 
@@ -79,7 +83,7 @@ public class DWSProvinceStatsSqlApp {
                 .filter(t -> t.f0)
                 .map(t -> t.f1)
                 //.print("pv：");
-                .addSink(MySinkUtil.getClickHouseSink("gmall2021","province_stats_2021" , ProvinceStats.class));
+                .addSink(MySinkUtil.getClickHouseSink("gmall_realtime","province_stats_2021" , ProvinceStats.class));
 
 
 

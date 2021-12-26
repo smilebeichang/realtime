@@ -46,7 +46,7 @@ public class DWDDbApp extends BaseApp {
 
     public static void main(String[] args) throws ClassNotFoundException, IOException {
 
-        new DWDDbApp().init(1, "DWDDbApp", SystemConstant.TOPIC_ODS_DB);
+        new DWDDbApp().init(1, "DWDDbApp", SystemConstant.ODS_DB);
 
     }
 

@@ -33,7 +33,7 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
     public static void main(String[] args) {
 
         new DWSVisitorStatsApp().init(1,
-                "DWSVisitorStatsApp",
+                "DWSVisitorStatsApp5",
                 SystemConstant.DWD_PAGE_LOG,
                 SystemConstant.DWM_UV,
                 SystemConstant.DWM_USER_JUMP_DETAIL
@@ -54,11 +54,12 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
         //resultStream.print("resultStream")
 
         // 侧输出流验证
-        resultStream.getSideOutput(new OutputTag<VisitorStats>("late"){}).print();
+        resultStream.getSideOutput(new OutputTag<VisitorStats>("late"){}).print("late");
 
         // 3. 写入ClickHouse
-        //sink2ClickHouse(resultStream);
+        sink2ClickHouse(resultStream);
 
+        System.out.println("完成!!");
 
     }
 
@@ -206,18 +207,19 @@ public class DWSVisitorStatsApp extends BaseAppV2 {
                                 out.collect(stats);
                             }
                         });
-
+        result.print("结果输出:");
         return result;
     }
 
 
     /**
-     * 写入ck
+     * 写入ClickHouse
      * @param statsStream
+     *      初步定位:1.没有进入该方法   2.bcc3连不上
      */
     private void sink2ClickHouse(SingleOutputStreamOperator<VisitorStats> statsStream) {
 
-        statsStream.addSink(MySinkUtil.getClickHouseSink("gmall2021", "visitor_stats_2021", VisitorStats.class));
+        statsStream.addSink(MySinkUtil.getClickHouseSink("gmall_realtime", "visitor_stats_2021", VisitorStats.class));
 
     }
 

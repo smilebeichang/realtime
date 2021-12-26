@@ -8,7 +8,7 @@ import org.apache.flink.types.Row;
 
 /**
  * @Author : song bei chang
- * @create 2021/8/7 10:40
+ * @create 2021/11/29 22:40
  */
 @FunctionHint(output = @DataTypeHint("ROW<source string, ct bigint>"))
 public class KeyWordProductUdtf extends TableFunction<Row> {

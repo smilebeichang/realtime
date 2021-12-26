@@ -26,7 +26,8 @@ public class MySinkUtil {
      */
     public static <T> SinkFunction<T> getClickHouseSink(String db, String tableName, Class<T> tClass) {
 
-        String clickHouseUrl = "jdbc:clickhouse://hadoop163:8123/" + db;
+        System.out.println("进入getClickHouseSink");
+        String clickHouseUrl = "jdbc:clickhouse://bcc3:8123/" + db;
         String clickHourDriverName = "ru.yandex.clickhouse.ClickHouseDriver";
 
         // 根据表名拼接sql语句
@@ -65,7 +66,7 @@ public class MySinkUtil {
         // 拼接的最后一个逗号去掉
         sql.deleteCharAt(sql.length() - 1);
         sql.append(")");
-        System.out.println(sql.toString());
+        System.out.println("SQL : "+sql.toString());
         return getJdbcSink(clickHouseUrl,
                 clickHourDriverName,
                 sql.toString());
@@ -89,8 +90,6 @@ public class MySinkUtil {
                                     ps.setObject(position++, v);
                                 }
 
-
-
                             }
                         }
                     } catch (Exception e) {
@@ -103,6 +102,25 @@ public class MySinkUtil {
                         .withDriverName(driver)
                         .build()
         );
+
+    }
+
+
+    /**
+     * 测试 clickHouse 是否有效
+     * 待优化
+     */
+    public static void main(String[] args) {
+
+        System.out.println("进入getClickHouseSink");
+        String clickHouseUrl = "jdbc:clickhouse://182.61.59.65:8123/gmall_realtime"  ;
+        String clickHourDriverName = "ru.yandex.clickhouse.ClickHouseDriver";
+
+        String sql = "insert into visitor_stats_2021 values('2021-05-16 16:18:00','2021-03-16 16:18:10','v2.1.134','oppo',440000,0,0,10,2,1,0,1615882682000)";
+
+        getJdbcSink(clickHouseUrl,
+                clickHourDriverName,
+                sql);
 
     }
 }
