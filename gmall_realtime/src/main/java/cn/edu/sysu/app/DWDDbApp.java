@@ -139,7 +139,7 @@ public class DWDDbApp extends BaseApp {
                         // upset into user(id,name) values('100', 'lisi')
                         write2Hbase(value);
 
-                        // 事实表join维度表的时候添加的代码
+                        // 事实表join维度表的时候添加的代码(用于独立缓存的清理操作,时刻更新维度数据)
                         delCache(value);
                     }
 

@@ -68,7 +68,7 @@ public abstract class BaseApp {
 
         run(env, sourceStream);
 
-        // executor 构造器,可以给取jobName
+        // executor 构造器,取名jobName
         try {
             env.execute(groupId);
         } catch (Exception e) {

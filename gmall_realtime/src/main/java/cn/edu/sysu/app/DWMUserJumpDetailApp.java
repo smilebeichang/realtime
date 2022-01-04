@@ -59,7 +59,7 @@ public class DWMUserJumpDetailApp extends BaseApp {
 
         sourceStream.print();
 
-        // 1. 数据封装, 添加水印, 按照mid分组
+        // 1. 数据封装(添加水印, 按照mid分组)
         final KeyedStream<JSONObject, String> jsonObjectKS = sourceStream
                 .map(JSONObject::parseObject)
                 // 需添加水印，默认处理时间，很快速
@@ -72,7 +72,7 @@ public class DWMUserJumpDetailApp extends BaseApp {
 
         // 2. 定义模式
         final Pattern<JSONObject, JSONObject> pattern = Pattern
-                // 入口
+                // 入口 条件一
                 .<JSONObject>begin("go_in")
                 .where(new SimpleCondition<JSONObject>() {
                     // 条件1: 进入第一个页面 (没有上一个页面)
@@ -82,7 +82,7 @@ public class DWMUserJumpDetailApp extends BaseApp {
                         return lastPageId == null || lastPageId.length() == 0;
                     }
                 })
-                // 接下来30s的行为
+                // 接下来30s的行为  条件二
                 .next("next")
                 .where(new SimpleCondition<JSONObject>() {
                     // 条件2: 一个或多个访问记录
@@ -98,7 +98,7 @@ public class DWMUserJumpDetailApp extends BaseApp {
         // 3. 把模式应用到流上
         final PatternStream<JSONObject> patternStream = CEP.pattern(jsonObjectKS, pattern);
 
-        // 4. 获取匹配到的结果: 提前超时数据
+        // 4. 获取匹配到的结果: 提取超时数据
         final OutputTag<String> timeoutTag = new OutputTag<String>("timeout") {};
         final SingleOutputStreamOperator<Object> resultStream = patternStream.flatSelect(
                 timeoutTag,

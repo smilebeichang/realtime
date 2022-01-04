@@ -183,7 +183,7 @@ public class DWMOrderWideApp_Asyn extends BaseAppV2 {
                                 final JSONObject tmObj = readDim(client, "dim_base_trademark", orderWide.getTm_id() + "");
                                 orderWide.setTm_name(tmObj.getString("TM_NAME"));
 
-                                // 把 Jedis 客户端返回给Jedis连接池   异步连接需要及时归还,否则会造成连接溢出
+                                // 把 Jedis 客户端返回给Jedis连接池   异步连接需要及时归还,否则会造成连接溢出  强
                                 client.close();
                                 // 把结果交给resultFuture
                                 resultFuture.complete(Collections.singletonList(orderWide));

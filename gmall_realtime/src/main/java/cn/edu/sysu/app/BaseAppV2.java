@@ -55,6 +55,7 @@ public abstract class BaseAppV2 {
         // 4. 设置状态后端
         env.setStateBackend(new FsStateBackend("hdfs://ecs2:9820/flink/realtime/checkpoint"));
 
+        //  比基础版,多了一个遍历操作而已,将结果包装成 hashMap
         final Map<String, DataStreamSource<String>> sourceStreams = new HashMap<>();
         for (String topic : topics) {
             final DataStreamSource<String> sourceStream = env.addSource(MyKafkaUtil.getKafkaSource(groupId, topic));

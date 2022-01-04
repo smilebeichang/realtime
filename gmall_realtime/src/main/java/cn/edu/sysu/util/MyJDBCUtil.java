@@ -37,7 +37,7 @@ public class MyJDBCUtil {
             }
             // 1. 获取结果集
             final ResultSet resultSet = ps.executeQuery();
-            // 2. 获取元数据: 比如列名啥的
+            // 2. 获取元数据: 比如列名啥的  通过结果查询元数据
             final ResultSetMetaData metaData = resultSet.getMetaData();
             // 3. 用于返回最终结果
             final ArrayList<T> result = new ArrayList<>();
